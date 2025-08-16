@@ -1,0 +1,93 @@
+package com.ems.gui;
+
+import javax.swing.*;
+import java.awt.event.*;
+import java.sql.*;
+import com.ems.db.MySQLConnection;
+
+public class ViewEmployee extends JFrame {
+    private JTextField idField;
+    private JLabel nameLabel, salaryLabel, deptLabel, posLabel;
+    private JButton viewBtn, backBtn;
+
+    public ViewEmployee() {
+        setTitle("View Employee");
+        setSize(400, 350);
+        setLayout(null);
+
+        JLabel idLabel = new JLabel("Enter Employee ID:");
+        idLabel.setBounds(30, 30, 150, 25);
+        add(idLabel);
+
+        idField = new JTextField();
+        idField.setBounds(180, 30, 150, 25);
+        add(idField);
+
+        viewBtn = new JButton("View");
+        viewBtn.setBounds(130, 70, 100, 30);
+        add(viewBtn);
+
+        nameLabel = new JLabel("Name: ");
+        nameLabel.setBounds(30, 120, 300, 25);
+        add(nameLabel);
+
+        salaryLabel = new JLabel("Salary: ");
+        salaryLabel.setBounds(30, 150, 300, 25);
+        add(salaryLabel);
+
+        deptLabel = new JLabel("Department: ");
+        deptLabel.setBounds(30, 180, 300, 25);
+        add(deptLabel);
+
+        posLabel = new JLabel("Position: ");
+        posLabel.setBounds(30, 210, 300, 25);
+        add(posLabel);
+
+        backBtn = new JButton("Back");
+        backBtn.setBounds(130, 260, 100, 30);
+        add(backBtn);
+
+        viewBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                int id = Integer.parseInt(idField.getText());
+
+                try (Connection con = MySQLConnection.getConnection()) {
+                    String sql = "SELECT * FROM employee WHERE id=?";
+                    PreparedStatement ps = con.prepareStatement(sql);
+                    ps.setInt(1, id);
+                    ResultSet rs = ps.executeQuery();
+
+                    if (rs.next()) {
+                        nameLabel.setText("Name: " + rs.getString("name"));
+                        salaryLabel.setText("Salary: " + rs.getDouble("salary"));
+                        deptLabel.setText("Department: " + rs.getString("department"));
+                        posLabel.setText("Position: " + rs.getString("position"));
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Employee not found!");
+                        clearLabels();
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Error: " + ex.getMessage());
+                }
+            }
+        });
+
+        backBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                new EMS().setVisible(true);
+                dispose();
+            }
+        });
+
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setVisible(true);
+    }
+
+    private void clearLabels() {
+        nameLabel.setText("Name: ");
+        salaryLabel.setText("Salary: ");
+        deptLabel.setText("Department: ");
+        posLabel.setText("Position: ");
+    }
+}
